@@ -723,8 +723,45 @@ status_t SurfaceFlinger::getDisplayInfo(const sp<IBinder>& display, DisplayInfo*
         info->orientation = 0;
     }
 
-    info->w = hwc.getWidth(type);
-    info->h = hwc.getHeight(type);
+
+
+     //dg  cancle  2015-07-21
+    // info->w = hwc.getWidth(type);
+    //  info->h = hwc.getHeight(type);
+
+#if 1   //dg add 2015-07-21
+
+    int width = hwc.getWidth(type);
+    int height = hwc.getHeight(type);
+
+    int displayOrientation = DisplayState::eOrientationDefault;
+    char property[PROPERTY_VALUE_MAX];
+    if (type == DisplayDevice::DISPLAY_PRIMARY) {
+        if (property_get("ro.sf.hwrotation", property, NULL) > 0) {
+            switch (atoi(property)) {
+            case 90:
+                displayOrientation = DisplayState::eOrientation90;
+                break;
+            case 270:
+                displayOrientation = DisplayState::eOrientation270;
+                break;
+            }
+        }
+    }
+
+    if (displayOrientation & DisplayState::eOrientationSwapMask) {
+        swap(width, height);
+    }
+
+    info->w = width;
+    info->h = height;
+
+#endif
+
+
+
+
+
     info->xdpi = xdpi;
     info->ydpi = ydpi;
     info->fps = float(1e9 / hwc.getRefreshPeriod(type));
